@@ -1,4 +1,3 @@
-using System.Text;
 using UrlShortener.Application.DTOs;
 using UrlShortener.Application.Interfaces;
 using UrlShortener.Core.Entities;
@@ -12,14 +11,12 @@ public class UrlShortenerService(IUrlRepository urlRepository, IGenerateRandomSt
     private readonly IUrlRepository _urlRepository = urlRepository;
     private readonly IGenerateRandomString _generateRandomString = generateRandomString;
 
-    public async Task<ShortenUrlResult> ShortenUrlAsync(string originalUrl, string customAlias)
+    public async Task<ShortenUrlResultDTO> ShortenUrlAsync(string originalUrl, string customAlias)
     {
         if (!string.IsNullOrEmpty(customAlias) && await _urlRepository.AliasExistsAsync(customAlias))
-            return new ShortenUrlResult{ HasError = true };
+            return new ShortenUrlResultDTO { HasError = true };
 
         var alias = string.IsNullOrEmpty(customAlias) ? await GenerateUniqueAliasAsync() : customAlias;
-        
-        // TODO: Criar um HASH para a URL
         var urlEntry = new UrlEntry
         {
             OriginalUrl = originalUrl,
@@ -28,8 +25,8 @@ public class UrlShortenerService(IUrlRepository urlRepository, IGenerateRandomSt
             CreatedAt = DateTime.Now
         };
         await _urlRepository.AddAsync(urlEntry);
-    
-        return new ShortenUrlResult
+
+        return new ShortenUrlResultDTO
         {
             Alias = alias,
             ShortUrl = urlEntry.ShortUrl

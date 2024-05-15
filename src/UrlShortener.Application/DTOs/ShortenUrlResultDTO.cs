@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UrlShortener.Application.DTOs;
 
-public class ShortenUrlResult
+public class ShortenUrlResultDTO
 {
     public string? Alias { get; set; }
 
