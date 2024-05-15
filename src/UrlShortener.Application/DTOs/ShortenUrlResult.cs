@@ -14,4 +14,6 @@ public class ShortenUrlResult
     public string Description { get; set; }
 
     public object Statistics { get; set; }
+
+    public bool HasError { get; set;}
 }

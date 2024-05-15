@@ -12,15 +12,11 @@ public class UrlShortenerService(IUrlRepository urlRepository) : IUrlShortenerSe
     public async Task<ShortenUrlResult> ShortenUrlAsync(string originalUrl, string customAlias)
     {
         if (!string.IsNullOrEmpty(customAlias) && await _urlRepository.AliasExistsAsync(customAlias))
-        {
-            return new ShortenUrlResult
-            {
-                ErrorCode = "001",
-                Description = "CUSTOM ALIAS ALREADY EXISTS"
-            };
-        }
+            return new ShortenUrlResult{ HasError = true };
 
         var alias = string.IsNullOrEmpty(customAlias) ? await GenerateUniqueAliasAsync() : customAlias;
+        
+        // TODO: Criar um HASH para a URL
         var urlEntry = new UrlEntry
         {
             OriginalUrl = originalUrl,
@@ -29,7 +25,8 @@ public class UrlShortenerService(IUrlRepository urlRepository) : IUrlShortenerSe
             CreatedAt = DateTime.Now
         };
         await _urlRepository.AddAsync(urlEntry);
-
+    
+        // TODO: Calcular tempo de execução
         return new ShortenUrlResult
         {
             Alias = alias,
@@ -38,26 +35,17 @@ public class UrlShortenerService(IUrlRepository urlRepository) : IUrlShortenerSe
         };
     }
 
-    public async Task<string> RetrieveUrlAsync(string alias)
+    public async Task<string> RetrieveUrlAsync(string shortUrl)
     {
-        var urlEntry = await _urlRepository.GetByAliasAsync(alias);
-        return urlEntry.OriginalUrl;
+        return await _urlRepository.GetByShortUrlAsync(shortUrl) is { } urlEntry ? urlEntry.OriginalUrl : string.Empty;
     }
     
     private async Task<string> GenerateUniqueAliasAsync()
     {
         const string Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        var random = new Random();
-        
-        // string alias = new(Enumerable.Repeat(Alphabet, 6).Select(s => s[random.Next(s.Length)]).ToArray());
-        // return await _urlRepository.AliasExistsAsync(alias) ? await GenerateUniqueAliasAsync() : alias;
 
-        string alias;
-        do
-        {
-            alias = new(Enumerable.Repeat(Alphabet, 6).Select(s => s[random.Next(s.Length)]).ToArray());
-        } while (await _urlRepository.AliasExistsAsync(alias));
-
-        return alias;
+        var random = new Random();        
+        string alias = new(Enumerable.Repeat(Alphabet, 6).Select(s => s[random.Next(s.Length)]).ToArray());
+        return await _urlRepository.AliasExistsAsync(alias) ? await GenerateUniqueAliasAsync() : alias;
     }
 }

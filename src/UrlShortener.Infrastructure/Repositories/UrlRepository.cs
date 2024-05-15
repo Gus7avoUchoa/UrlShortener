@@ -9,9 +9,9 @@ public class UrlRepository(UrlShortenerContext context) : IUrlRepository
 {
     private readonly UrlShortenerContext _context = context;
 
-    public async Task<UrlEntry> GetByAliasAsync(string alias)
+    public async Task<UrlEntry> GetByShortUrlAsync(string shortUrl)
     {
-        return await _context.UrlEntries.FirstOrDefaultAsync(x => x.Alias == alias) ?? throw new Exception("Alias não encontrado.");
+        return await _context.UrlEntries.FirstOrDefaultAsync(x => x.ShortUrl == shortUrl);
     }
 
     public async Task AddAsync(UrlEntry urlEntry)

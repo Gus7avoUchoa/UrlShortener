@@ -13,20 +13,32 @@ public class UrlShortenerController(IUrlShortenerService urlShortenerService) : 
     [HttpPut("create")]
     public async Task<IActionResult> CreateShortUrlAsync([FromBody] UrlRequestModel request)
     {
-        var result = await _urlShortenerService.ShortenUrlAsync(request.OriginalUrl, request.CustomAlias);
-        if (result.ErrorCode != null && result.ErrorCode == "001")
-            return Conflict( new { err_code = result.ErrorCode, alias = result.Description } );
-        
-        return Ok(result);
+        var result = await _urlShortenerService.ShortenUrlAsync(request.Url, request.CustomAlias);
+        if (result.HasError)
+            return Conflict(new
+            {
+                alias = request.CustomAlias,
+                err_code = "001",
+                description = "CUSTOM ALIAS ALREADY EXISTS"
+            });
+
+        return Ok(new
+        {
+            alias = result.Alias,
+            url = result.ShortUrl,
+            statistics = result.Statistics
+        });
     }
 
-    [HttpGet("{alias}")]
-    public async Task<IActionResult> RetrieveUrlAsync(string alias)
+    [HttpGet]
+    public async Task<IActionResult> RetrieveUrlAsync([FromQuery] string shortUrl)
     {
-        var originalUrl = await _urlShortenerService.RetrieveUrlAsync(alias);
-        if (originalUrl == null)
-            return NotFound(new { err_code = "002", alias = "ALIAS NOT FOUND" });
-
-        return Redirect(originalUrl);
+        var originalUrl = await _urlShortenerService.RetrieveUrlAsync(shortUrl);
+        return string.IsNullOrWhiteSpace(originalUrl) ?
+            NotFound(new
+            {
+                err_code = "002",
+                Description = "SHORTENED URL NOT FOUND"
+            }) : Ok(originalUrl);
     }
 }
