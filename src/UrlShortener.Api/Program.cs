@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using UrlShortener.Application.Interfaces;
 using UrlShortener.Application.Services;
 using UrlShortener.Core.Interfaces;
+using UrlShortener.Core.Utilities;
 using UrlShortener.Infrastructure.Data;
 using UrlShortener.Infrastructure.Repositories;
 
@@ -13,6 +14,7 @@ builder.Services.AddDbContext<UrlShortenerContext>(options =>
 });
 builder.Services.AddScoped<IUrlRepository, UrlRepository>();
 builder.Services.AddScoped<IUrlShortenerService, UrlShortenerService>();
+builder.Services.AddSingleton<IGenerateRandomString, GenerateRandomString>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

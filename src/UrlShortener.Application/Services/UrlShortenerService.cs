@@ -1,13 +1,16 @@
+using System.Text;
 using UrlShortener.Application.DTOs;
 using UrlShortener.Application.Interfaces;
 using UrlShortener.Core.Entities;
 using UrlShortener.Core.Interfaces;
+using UrlShortener.Core.Utilities;
 
 namespace UrlShortener.Application.Services;
 
-public class UrlShortenerService(IUrlRepository urlRepository) : IUrlShortenerService
+public class UrlShortenerService(IUrlRepository urlRepository, IGenerateRandomString generateRandomString) : IUrlShortenerService
 {
     private readonly IUrlRepository _urlRepository = urlRepository;
+    private readonly IGenerateRandomString _generateRandomString = generateRandomString;
 
     public async Task<ShortenUrlResult> ShortenUrlAsync(string originalUrl, string customAlias)
     {
@@ -26,12 +29,10 @@ public class UrlShortenerService(IUrlRepository urlRepository) : IUrlShortenerSe
         };
         await _urlRepository.AddAsync(urlEntry);
     
-        // TODO: Calcular tempo de execução
         return new ShortenUrlResult
         {
             Alias = alias,
-            ShortUrl = urlEntry.ShortUrl,
-            Statistics = new { time_taken = "Calcular tempo de execução" }
+            ShortUrl = urlEntry.ShortUrl
         };
     }
 
@@ -39,13 +40,14 @@ public class UrlShortenerService(IUrlRepository urlRepository) : IUrlShortenerSe
     {
         return await _urlRepository.GetByShortUrlAsync(shortUrl) is { } urlEntry ? urlEntry.OriginalUrl : string.Empty;
     }
-    
+
     private async Task<string> GenerateUniqueAliasAsync()
     {
-        const string Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-        var random = new Random();        
-        string alias = new(Enumerable.Repeat(Alphabet, 6).Select(s => s[random.Next(s.Length)]).ToArray());
-        return await _urlRepository.AliasExistsAsync(alias) ? await GenerateUniqueAliasAsync() : alias;
+        string alias;
+        do
+        {
+            alias = _generateRandomString.Generate(6);
+        } while (await _urlRepository.AliasExistsAsync(alias));
+        return alias;
     }
 }

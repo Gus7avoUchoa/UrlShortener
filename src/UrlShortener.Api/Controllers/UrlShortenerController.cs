@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using UrlShortener.Api.Models;
 using UrlShortener.Application.Interfaces;
@@ -13,6 +14,8 @@ public class UrlShortenerController(IUrlShortenerService urlShortenerService) : 
     [HttpPut("create")]
     public async Task<IActionResult> CreateShortUrlAsync([FromBody] UrlRequestModel request)
     {
+        var stopwatch = Stopwatch.StartNew();
+
         var result = await _urlShortenerService.ShortenUrlAsync(request.Url, request.CustomAlias);
         if (result.HasError)
             return Conflict(new
@@ -22,11 +25,16 @@ public class UrlShortenerController(IUrlShortenerService urlShortenerService) : 
                 description = "CUSTOM ALIAS ALREADY EXISTS"
             });
 
+        stopwatch.Stop();
+
         return Ok(new
         {
             alias = result.Alias,
             url = result.ShortUrl,
-            statistics = result.Statistics
+            statistics = new
+            {
+                time_taken = $"{stopwatch.ElapsedMilliseconds}ms"
+            }
         });
     }
 
