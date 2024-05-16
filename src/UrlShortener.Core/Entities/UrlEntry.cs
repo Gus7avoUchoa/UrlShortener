@@ -11,11 +11,11 @@ public class UrlEntry
     public required string OriginalUrl { get; set; }
 
     [Required]
-    public required string Alias { get; set; }
+    public string Alias { get; set; }
 
     [Required]
     [StringLength(50)]
-    public required string ShortUrl { get; set; }
+    public string ShortUrl { get; set; }
 
     public DateTime CreatedAt { get; set; }
 }

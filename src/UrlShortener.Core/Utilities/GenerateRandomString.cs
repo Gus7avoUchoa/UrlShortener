@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using UrlShortener.Core.Interfaces;
 
 namespace UrlShortener.Core.Utilities;
 
@@ -6,7 +7,7 @@ public class GenerateRandomString : IGenerateRandomString
 {
     private static readonly char[] Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".ToCharArray();
 
-    public string Generate(int length)
+    public async Task<string> Generate(int length)
     {
         var result = new char[length];
         var buffer = new byte[length];

@@ -1,6 +1,6 @@
-namespace UrlShortener.Core.Utilities;
+namespace UrlShortener.Core.Interfaces;
 
 public interface IGenerateRandomString
 {
-    string Generate(int length);
+    Task<string> Generate(int length);
 }

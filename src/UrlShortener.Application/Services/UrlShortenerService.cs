@@ -6,17 +6,23 @@ using UrlShortener.Core.Utilities;
 
 namespace UrlShortener.Application.Services;
 
-public class UrlShortenerService(IUrlRepository urlRepository, IGenerateRandomString generateRandomString) : IUrlShortenerService
+public class UrlShortenerService : IUrlShortenerService
 {
-    private readonly IUrlRepository _urlRepository = urlRepository;
-    private readonly IGenerateRandomString _generateRandomString = generateRandomString;
+    private readonly IUrlRepository _urlRepository;
+    private readonly IGenerateUniqueAlias _generateUniqueAlias;
+
+    public UrlShortenerService(IUrlRepository urlRepository, IGenerateRandomString generateRandomString)
+    {
+        _urlRepository = urlRepository;
+        _generateUniqueAlias = new GenerateUniqueAlias(generateRandomString, _urlRepository);
+    }
 
     public async Task<ShortenUrlResultDTO> ShortenUrlAsync(string originalUrl, string customAlias)
     {
         if (!string.IsNullOrEmpty(customAlias) && await _urlRepository.AliasExistsAsync(customAlias))
             return new ShortenUrlResultDTO { HasError = true };
 
-        var alias = string.IsNullOrEmpty(customAlias) ? await GenerateUniqueAliasAsync() : customAlias;
+        var alias = string.IsNullOrEmpty(customAlias) ? await _generateUniqueAlias.Generate() : customAlias;
         var urlEntry = new UrlEntry
         {
             OriginalUrl = originalUrl,
@@ -44,17 +50,7 @@ public class UrlShortenerService(IUrlRepository urlRepository, IGenerateRandomSt
         return mostAccessedUrls.Select(x => new MostAccessedDTO
         {
             AccessCount = x.AccessCount,
-            OriginalUrl = x.OriginalUrl            
+            OriginalUrl = x.OriginalUrl
         }).ToList();
-    }
-
-    private async Task<string> GenerateUniqueAliasAsync()
-    {
-        string alias;
-        do
-        {
-            alias = _generateRandomString.Generate(6);
-        } while (await _urlRepository.AliasExistsAsync(alias));
-        return alias;
     }
 }
