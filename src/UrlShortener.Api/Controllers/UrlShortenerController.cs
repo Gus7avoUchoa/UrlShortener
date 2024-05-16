@@ -38,7 +38,7 @@ public class UrlShortenerController(IUrlShortenerService urlShortenerService) : 
         });
     }
 
-    [HttpGet]
+    [HttpGet("shortUrl")]
     public async Task<IActionResult> RetrieveUrlAsync([FromQuery] string shortUrl)
     {
         var originalUrl = await _urlShortenerService.RetrieveUrlAsync(shortUrl);
@@ -48,5 +48,12 @@ public class UrlShortenerController(IUrlShortenerService urlShortenerService) : 
                 err_code = "002",
                 Description = "SHORTENED URL NOT FOUND"
             }) : Ok(originalUrl);
+    }
+
+    [HttpGet("most-accessed")]
+    public async Task<IActionResult> MostAccessedUrlsAsync()
+    {
+        var mostAccessedUrls = await _urlShortenerService.GetMostAccessedUrlsAsync();
+        return Ok(mostAccessedUrls);
     }
 }

@@ -6,4 +6,5 @@ public interface IUrlShortenerService
 {
     Task<ShortenUrlResultDTO> ShortenUrlAsync(string originalUrl, string customAlias);
     Task<string> RetrieveUrlAsync(string shortUrl);
+    Task<List<MostAccessedDTO>> GetMostAccessedUrlsAsync();
 }

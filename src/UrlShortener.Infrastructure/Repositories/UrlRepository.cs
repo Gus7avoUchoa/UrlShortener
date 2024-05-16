@@ -24,4 +24,16 @@ public class UrlRepository(UrlShortenerContext context) : IUrlRepository
     {
         return await _context.UrlEntries.AnyAsync(x => x.Alias == alias);
     }
+
+    public async Task<List<(int AccessCount, string OriginalUrl)>> GetMostAccessedUrlsAsync()
+    {
+        var result = await _context.UrlEntries
+                                   .GroupBy(x => x.OriginalUrl)
+                                   .OrderByDescending(x => x.Count())
+                                   .Take(10)
+                                   .Select(x => new { AccessCount = x.Count(), x.Key })
+                                   .ToListAsync();
+
+        return result.Select(x => (x.AccessCount, x.Key)).ToList();
+    }
 }

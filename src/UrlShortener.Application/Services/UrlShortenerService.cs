@@ -38,6 +38,16 @@ public class UrlShortenerService(IUrlRepository urlRepository, IGenerateRandomSt
         return await _urlRepository.GetByShortUrlAsync(shortUrl) is { } urlEntry ? urlEntry.OriginalUrl : string.Empty;
     }
 
+    public async Task<List<MostAccessedDTO>> GetMostAccessedUrlsAsync()
+    {
+        var mostAccessedUrls = await _urlRepository.GetMostAccessedUrlsAsync();
+        return mostAccessedUrls.Select(x => new MostAccessedDTO
+        {
+            AccessCount = x.AccessCount,
+            OriginalUrl = x.OriginalUrl            
+        }).ToList();
+    }
+
     private async Task<string> GenerateUniqueAliasAsync()
     {
         string alias;
